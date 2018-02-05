@@ -1,0 +1,221 @@
+<Page ux:Class="TeacherLogin">
+	<Router ux:Dependency="router" />
+
+	<JavaScript>
+		var Observable = require('FuseJS/Observable');
+		var FileSystem = require("FuseJS/FileSystem");
+		var autoLogInPath = FileSystem.dataDirectory + "/" + "AutoLogin.tmp";
+
+		var userPhoneNumber = Observable("");
+		var userPassword = Observable("");
+
+		var logInAlert = {
+			title: Observable("경고창"),
+			contents: Observable("경고창 내용입니다."),
+			layer: Observable("Background")
+		};
+
+		function logIn() {
+			console.log("Try log-in");
+			if (checkLogIn()) {
+				console.log("Check OK!");
+
+				// 자동로그인 체크하고 로그인 하면 저장하기, 체크 안했으면 정보파일 삭제
+				if (autoLogIn.value) {
+					var tempText = '{"userPhoneNumber":"'+userPhoneNumber.value+'","userPassword":"'+userPassword.value+'"}';
+					FileSystem.writeTextToFile(autoLogInPath, tempText).then(function() {
+						return FileSystem.readTextFromFile(autoLogInPath);
+					}).then(function(text) {
+						console.log("The read file content was: " + text);
+
+						console.log("AutoLogIn info saved");
+					}).catch(function(error) {
+						console.log("Unable to read file due to error:" + error);
+					});
+				} else {
+					FileSystem.exists(autoLogInPath).then(function(x) {
+						console.log(x ? "it's there! =)" : "it's missing :/");
+
+						if (x) {
+							FileSystem.delete(autoLogInPath).then(function(x) {
+								console.log("Delete succeeded");
+							}, function(error) {
+								console.log("Unable to delete file");
+							});
+						}
+					}, function(error) {
+						console.log("Unable to check if file exists");
+					});
+				}
+
+				router.push("TeacherSearch");
+			} else {
+				console.log("Fail to log-in");
+				logInAlert.layer.value = "Overlay";
+			}
+		}
+
+		function checkLogIn() {
+			if (userPhoneNumber.value == "") {
+				logInAlert.title.value = "전화번호";
+				logInAlert.contents.value = "전화번호를 입력하세요.";
+			} else if (userPassword.value == "") {
+				logInAlert.title.value = "비밀번호";
+				logInAlert.contents.value = "비밀번호를 입력하세요.";
+			} else {
+				return true;
+			}
+		}
+
+		var autoLogIn = Observable(false);
+
+		function toggleAutoLogIn() {
+			console.log("Auto LogIn CheckBox toggled");
+			if (autoLogIn.value == true) {
+				autoLogIn.value = false;
+				logInAlert.title.value = "자동로그인";
+				logInAlert.contents.value = "자동로그인 기능이 해제되었습니다.";
+			} else {
+				autoLogIn.value = true;
+				logInAlert.title.value = "자동로그인";
+				logInAlert.contents.value = "자동로그인 기능이 활성화되었습니다.";
+			}
+			logInAlert.layer.value = "Overlay";
+		}
+
+		function logInAlertOk() {
+			logInAlert.layer.value = "Background";
+		}
+
+		function readAutoLogInInfo() {
+			FileSystem.exists(autoLogInPath).then(function(x) {
+				console.log(x ? "AutoLogInInfo is there! =)" : "AutoLogInInfo is missing :/");
+				if (x) {
+					autoLogIn.value = true;
+
+					FileSystem.readTextFromFile(autoLogInPath).then(function(contents) {
+						console.log(contents);
+						var tempArray = JSON.parse(contents);
+
+						userPhoneNumber.value = tempArray["userPhoneNumber"];
+						userPassword.value = tempArray["userPassword"];
+					}, function(error) {
+						console.log(error);
+					});
+				} else {
+					userPhoneNumber.value = "";
+					userPassword.value = "";
+				}
+			}, function(error) {
+				console.log("Unable to check if file exists");
+			});
+		}
+
+		module.exports = {
+			userPhoneNumber, userPassword,
+			logIn, autoLogIn, toggleAutoLogIn, readAutoLogInInfo,
+			logInAlert, logInAlertOk
+		};
+	</JavaScript>
+
+	<WhileActive>
+		<Callback Handler="{readAutoLogInInfo}" />
+	</WhileActive>
+
+	<Rectangle Width="250" Height="200" CornerRadius="5" Color="White" Layer="{logInAlert.layer}">
+		<DockPanel>
+			<Rectangle Dock="Top" Width="250" Height="50" CornerRadius="5,5,0,0" Color="#18f">
+				<Text Value="{logInAlert.title}" Alignment="CenterLeft" Color="White" Margin="15">
+					<Scaling Factor="1.2" />
+				</Text>
+			</Rectangle>
+
+			<Panel Width="250" Height="100" Dock="Fill">
+				<Text Value="{logInAlert.contents}" Alignment="TopLeft" Margin="10" TextWrapping="Wrap" />
+			</Panel>
+
+			<Panel Width="250" Height="50" Dock="Bottom">
+				<Rectangle Width="100" Height="40" Alignment="Center" Color="#18f" CornerRadius="10">
+					<Text Value="확인" Alignment="Center" Color="White" />
+
+					<Clicked>
+						<Callback Handler="{logInAlertOk}" />
+					</Clicked>
+				</Rectangle>
+			</Panel>
+		</DockPanel>
+		<Stroke Width="1" Color="Black" />
+	</Rectangle>
+
+	<DockPanel Color="White">
+		<Panel Dock="Top" Height="50">
+			<Panel Color="White">
+				<Circle Width="30" Height="30" Margin="10" Alignment="CenterLeft">
+					<Stroke Width="3" Color="#18f" />
+					<Image File="Back.png" Width="60%" X="-2" Color="#18f" Alignment="Center" />					
+				</Circle>
+
+				<Clicked>
+					<Callback Handler="{goBack}" />
+				</Clicked>
+			</Panel>
+		</Panel>
+
+		<StackPanel ItemSpacing="10" Alignment="TopCenter" Width="100%" Padding="20" Dock="Fill">
+			<Image File="Teacher.png" Width="150" StretchMode="Uniform" Color="#18f" Alignment="Center" />
+			<Text Value="교사별 시간표 조회" FontSize="24" Color="Black" Alignment="Center" Margin="10" />
+			<Grid ColumnCount="2" Columns="1*, 2*" CellSpacing="10" Margin="5">
+				<Text Value="휴대폰 번호 : " Color="Black" Alignment="CenterRight" />
+
+				<Rectangle Width="100%" Height="50" CornerRadius="5" Color="White">
+					<Stroke Width="1" Color="#888" />
+					<TextInput Value="{userPhoneNumber}" PlaceholderText="11자리 휴대폰번호(숫자만)" PlaceholderColor="#888" MaxLength="11" InputHint="Phone" Margin="5" />
+				</Rectangle>
+
+				<Text Value="비밀번호 : " Color="Black" Alignment="CenterRight" />
+
+				<Rectangle Width="100%" Height="50" CornerRadius="5" Color="White">
+					<Stroke Width="1" Color="#888" />
+					<TextInput Value="{userPassword}" PlaceholderText="비밀번호 입력" PlaceholderColor="#888" IsPassword="true" Margin="5" />
+				</Rectangle>
+			</Grid>
+			<Grid ColumnCount="2">
+				<Rectangle Width="90%" Height="50" Color="#444" CornerRadius="5">
+					<Stroke Width="1" Color="#ddd" />
+					<Text Value="회원가입" Color="White" Alignment="Center" />
+
+					<Clicked>
+						<Callback Handler="{goTeacherSignIn}" />
+					</Clicked>
+				</Rectangle>
+
+				<Rectangle Width="90%" Height="50" Color="#18f" CornerRadius="5">
+					<Stroke Width="1" Color="#ddd" />
+					<Text Value="로그인" Color="White" Alignment="Center" />
+
+					<Clicked>
+						<Callback Handler="{logIn}" />
+					</Clicked>
+				</Rectangle>
+			</Grid>
+
+			<StackPanel Orientation="Horizontal" ItemSpacing="5" Alignment="Center">
+				<Rectangle Width="20" Height="20" CornerRadius="3" Color="White">
+					<Text ux:Name="autoLogInCheckBox" Value="V" Alignment="Center" Opacity="0" />
+
+					<Stroke Width="1" Color="Black" />
+
+					<WhileTrue Value="{autoLogIn}">
+						<Change autoLogInCheckBox.Opacity="1" />
+					</WhileTrue>
+				</Rectangle>
+
+				<Text Value="자동로그인" Color="Black" Y="1" />
+
+				<Clicked>
+					<Callback Handler="{toggleAutoLogIn}" />
+				</Clicked>
+			</StackPanel>
+		</StackPanel>
+	</DockPanel>
+</Page>

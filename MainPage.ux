@@ -1,0 +1,52 @@
+<Page ux:Class="MainPage">
+	<Router ux:Dependency="router" />
+
+	<WhileActive>
+		<Change pageloaded.Value="true" />
+	</WhileActive>
+
+	<DockPanel Color="White">
+		<Grid Dock="Fill" ColumnCount="2" Alignment="Center" Margin="50" CellSpacing="10" Y="-50">
+			<Rectangle CornerRadius="10" Color="#18f">
+				<StackPanel Width="120">
+					<Image File="Teacher.png" Width="100" StretchMode="Uniform" Margin="10" />
+					<Text Value="교사" FontSize="30" Color="White" Alignment="Center" Margin="10" />
+				</StackPanel>
+				<Clicked>
+					<Callback Handler="{goTeacherSearch}" />
+				</Clicked>
+			</Rectangle>
+
+			<Rectangle CornerRadius="10" Color="#197">
+				<StackPanel Width="120">
+					<Image File="Student.png" Width="100" StretchMode="Uniform" Margin="10" />
+					<Text Value="학생" FontSize="30" Color="White" Alignment="Center" Margin="10" />
+				</StackPanel>
+				<Clicked>
+					<Callback Handler="{goStudentSearch}" />
+				</Clicked>
+			</Rectangle>
+		</Grid>
+
+		<Panel Width="100%" Dock="Bottom">
+			<NativeViewHost>
+				<!-- 하단 광고부분. 주석 풀면 광고 나옴. -->
+				<iOS>
+					<Firebase.AdMob.GADBannerView AdUnitId="ca-app-pub-4413740776557426/4503004370" />
+				</iOS>
+				<Android>
+					<Firebase.AdMob.GADBannerView AdUnitId="ca-app-pub-4413740776557426/2395715789" />
+				</Android>
+			</NativeViewHost>
+
+			<!-- <Text Value="광고 삽입 부분" Color="Black" Alignment="Center" /> -->
+		</Panel>
+	</DockPanel>
+
+	<WhileTrue ux:Name="pageloaded">
+		<OnBackButton>
+			<Toggle Target="popupExit" />
+		</OnBackButton>
+	</WhileTrue>
+	<ux:Include File="exitMenu.ux" />
+</Page>

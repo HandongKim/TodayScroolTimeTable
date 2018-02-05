@@ -1,0 +1,33 @@
+<Page ux:Class="Intro">
+	<Router ux:Dependency="router" />
+
+	<WhileActive>
+		<Set Target="textAnimation.Value" Value="true" />
+		<Callback Handler="{goMainPage}" Delay="3" />
+	</WhileActive>
+
+	<Panel Alignment="Center" Y="-100">
+		<WhileTrue ux:Name="textAnimation" Value="false">
+			<Change text1.X="-45" Duration="0.2" Delay="1" />
+			<Change text1.Y="-45" Duration="0.2" Delay="1" />
+			<Change text1Shadow.Distance="5" Duration="0.2" Delay="1" />
+
+			<Change text2.Y="-35" Duration="0.2" Delay="1" />
+			<Change text2Rotation.Degrees="-45" Duration="0.2" Delay="1" />
+
+			<Change text3.X="-5" Duration="0.2" Delay="1" />
+			<Change text3.Y="45" Duration="0.2" Delay="1" />
+			<Change text3Shadow.Distance="-5" Duration="0.2" Delay="1" />
+		</WhileTrue>
+
+		<Text ux:Name="text1" X="-40" Y="-40" Font="Bold" Value="오늘" Color="#18f" FontSize="60" Alignment="Center">
+			<DropShadow ux:Name="text1Shadow" Distance="0" Angle="135" Size="1" />
+		</Text>
+		<Text ux:Name="text2" X="65" Y="-30" Font="Normal" Value="의" Color="#c47" FontSize="45" Alignment="Center" Margin="10">
+			<Rotation ux:Name="text2Rotation" Degrees="0" />
+		</Text>
+		<Text ux:Name="text3" X="0" Y="40" Font="Bold" Value="시간표" Color="#197" FontSize="60" Alignment="Center" Margin="20">
+			<DropShadow ux:Name="text3Shadow" Distance="0" Angle="45" Size="1" />
+		</Text>
+	</Panel>
+</Page>

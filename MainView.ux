@@ -1,0 +1,62 @@
+<App>
+	<Router ux:Name="router" />
+
+	<JavaScript>
+		module.exports = {
+			goBack: function() {
+				router.getRoute(function(route) {
+					console.log("goBack From " + route);
+				});
+				router.goBack();
+			},
+			goMainPage: function() {
+				console.log("goMainPage Clicked.");
+				router.goto("MainPage");
+			},
+			goTeacherLogin: function() {
+				console.log("goTeacherLogin Clicked.");
+				router.push("TeacherLogin");
+			},
+			goTeacherSignIn: function() {
+				console.log("goTeacherSignIn Clicked.");
+				router.push("TeacherSignIn");
+			},
+			goTeacherSearch: function() {
+				console.log("goTeacherSearch Clicked.");
+				router.push("TeacherSearch");
+			},
+			goTeacherSetting: function() {
+				console.log("goTeacherSetting Clicked.");
+				router.push("TeacherSetting");
+			},
+			goStudentSearch: function() {
+				console.log("goStudentSearch Clicked.");
+				router.push("StudentSearch");
+			},
+			goStudentSetting: function() {
+				console.log("goStudentSetting Clicked.");
+				router.push("StudentSetting");
+			}
+		};
+	</JavaScript>
+
+	<Font File="Assets/Wolin.ttf" ux:Global="Bold" />
+	<Font File="Assets/NanumBarunGothic.ttf" ux:Global="Normal" />
+
+	<DockPanel Color="#18f7">
+		<StatusBarBackground Dock="Top" />
+		<ClientPanel Color="White">
+			<Navigator DefaultPath="Intro">
+				<Intro ux:Template="Intro" router="router" />
+				<MainPage ux:Template="MainPage" router="router" />
+				<!-- <TeacherLogin ux:Template="TeacherLogin" router="router" />
+				<TeacherSignIn ux:Template="TeacherSignIn" router="router" /> -->
+				<TeacherSearch ux:Template="TeacherSearch" router="router" />
+				<TeacherSetting ux:Template="TeacherSetting" router="router" />
+				<StudentSearch ux:Template="StudentSearch" router="router" />
+				<StudentSetting ux:Template="StudentSetting" router="router" />
+			</Navigator>
+		</ClientPanel>
+		<!-- <BottomBarBackground Dock="Bottom" /> -->
+	</DockPanel>
+</App>

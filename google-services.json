@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "354183241504",
+    "firebase_url": "https://todayschooltimetable.firebaseio.com",
+    "project_id": "todayschooltimetable",
+    "storage_bucket": "todayschooltimetable.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:354183241504:android:5413e0e97134e91d",
+        "android_client_info": {
+          "package_name": "com.apps.TodaySchoolTimeTable"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "354183241504-l6793f9rvq6f0jkjamccn6j0t6oiudaj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.apps.TodaySchoolTimeTable",
+            "certificate_hash": "db4262e7233f7768a138740908bc00163c786695"
+          }
+        },
+        {
+          "client_id": "354183241504-eq8hl2scsimjobjjr1uus4ukv07skit6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2bVIDgVvEYhDtavND3fjcWN74Gk5tV_U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "354183241504-i9scbdsfhvpb1gr0cnctkhemt2c1r6sd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.apps.TodaySchoolTimeTable"
+              }
+            },
+            {
+              "client_id": "354183241504-eq8hl2scsimjobjjr1uus4ukv07skit6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,31 @@
+{
+  "RootNamespace":"",
+  "Packages": [
+    "Fuse",
+    "FuseJS"
+  ],
+  "Projects": [
+    "Firebase/Firebase/Firebase.unoproj",
+    "Firebase/Firebase.AdMob/Firebase.AdMob.unoproj"
+  ],
+  "Mobile": {
+    "Orientations": "Portrait"
+  },
+  "AdMob": {
+    "TestDevices": [
+      "598F716FEB757D1706C0C67C69CEB122"
+    ]
+  },
+  "Android": {
+    "Package": "com.apps.TodaySchoolTimeTable"
+  },
+  "iOS": {
+    "BundleIdentifier": "com.apps.TodaySchoolTimeTable"
+  },
+  "Includes": [
+    "*",
+    "*.json:Bundle",
+    "HomeScreen.uno",
+    "GoogleService-Info.plist:ObjCSource:iOS"
+  ]
+}
