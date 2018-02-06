@@ -7,14 +7,15 @@
 		var path = FileSystem.dataDirectory + "/" + "TeacherSetting.tmp";
 
 		var schoolGrade = Observable("초등학교");
-		var location = Observable();
-		var schoolName = Observable();
-		var schoolFullName;
-		var schoolCode;
-		var teacherName = Observable();
-		var authKey = Observable();
+		var location = Observable("");
+		var schoolName = Observable("");
+		var schoolFullName = "";
+		var schoolCode = "";
+		var teacherName = Observable("");
+		var authKey = Observable("");
 
 		function setting() {
+			authKey.value = authKey.value.toUpperCase();
 			var tempText = '{"schoolGrade":"'+schoolGrade.value+'","location":"'+location.value+'","schoolName":"'+schoolName.value+'","schoolFullName":"'+schoolFullName+'","schoolCode":"'+schoolCode+'","teacherName":"'+teacherName.value+'","authKey":"'+authKey.value+'"}';
 			FileSystem.writeTextToFile(path, tempText).then(function() {
 				return FileSystem.readTextFromFile(path);
@@ -191,8 +192,12 @@
 			setting, readSetting,
 			cancelSetting: function() {
 				schoolGrade.value = "초등학교";
+				location.value = "";
 				schoolName.value = "";
-				teacherName = "";
+				schoolFullName = "";
+				schoolCode = "";
+				teacherName.value = "";
+				authKey.value = "";
 				router.getRoute(function(route) {
 					console.log("goBack From " + route);
 				});

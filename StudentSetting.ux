@@ -191,12 +191,15 @@
 			setting, readSetting,
 			cancelSetting: function() {
 				schoolGrade.value = "초등학교";
+				location.value = "";
 				schoolName.value = "";
-				schoolClass = "";
+				schoolFullName = "";
+				schoolCode = "";
+				schoolClass.value = "";
+				authKey.value = "";
 				router.getRoute(function(route) {
 					console.log("goBack From " + route);
 				});
-				router.goBack();
 			},
 			onSearchSchoolPanel, searchSchoolPanelOn, searchSchoolPanelDown,
 			enteredSchoolName, schoolSearch, searchedSchool, choiceSchool,
