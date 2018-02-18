@@ -3,7 +3,7 @@
 
 	<WhileActive>
 		<Set Target="textAnimation.Value" Value="true" />
-		<Callback Handler="{goMainPage}" Delay="3" />
+		<Callback Handler="{goMainPage}" Delay="2" />
 	</WhileActive>
 
 	<Panel Alignment="Center" Y="-100">

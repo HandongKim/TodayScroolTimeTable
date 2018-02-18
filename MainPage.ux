@@ -28,9 +28,8 @@
 			</Rectangle>
 		</Grid>
 
-		<Panel Width="100%" Dock="Bottom">
+		<Panel Width="100%" Height="90" Dock="Bottom">
 			<NativeViewHost>
-				<!-- 하단 광고부분. 주석 풀면 광고 나옴. -->
 				<iOS>
 					<Firebase.AdMob.GADBannerView AdUnitId="ca-app-pub-4413740776557426/4503004370" />
 				</iOS>
@@ -38,8 +37,6 @@
 					<Firebase.AdMob.GADBannerView AdUnitId="ca-app-pub-4413740776557426/2395715789" />
 				</Android>
 			</NativeViewHost>
-
-			<!-- <Text Value="광고 삽입 부분" Color="Black" Alignment="Center" /> -->
 		</Panel>
 	</DockPanel>
 

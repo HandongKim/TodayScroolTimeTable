@@ -20,12 +20,6 @@
 			FileSystem.writeTextToFile(path, tempText).then(function() {
 				return FileSystem.readTextFromFile(path);
 			}).then(function(text) {
-				console.log("The read file content was: " + text);
-
-				console.log("Teacher Setting Success");
-				router.getRoute(function(route) {
-					console.log("goBack From " + route);
-				});
 				router.goBack();
 			}).catch(function(error) {
 				console.log("Unable to read file due to error:" + error);
@@ -34,13 +28,10 @@
 
 		function readSetting() {
 			FileSystem.exists(path).then(function(x) {
-				console.log(x ? "Teacher setting is there! =)" : "Teacher setting  is missing :/");
-
 				if (x) {
 					FileSystem.readTextFromFile(path).then(function(contents) {
 						console.log(contents);
 						var tempArray = JSON.parse(contents);
-						// console.log(tempArray["schoolGrade"]);
 
 						location.value = tempArray["location"];
 						schoolGrade.value = tempArray["schoolGrade"];
@@ -60,7 +51,6 @@
 
 		var onSearchSchoolPanel = Observable(false);
 		function searchSchoolPanelOn() {
-			console.log("Search for " + schoolGrade.value);
 			searchedSchool.clear();
 			onSearchSchoolPanel.value = true;
 			enteredSchoolName.value = "";
@@ -178,8 +168,6 @@
 		}
 
 		function choiceSchool(arg) {
-			console.log("Choice this school : " +arg.data.name);
-
 			location.value = arg.data.location;
 			schoolName.value = arg.data.name;
 			schoolFullName = arg.data.fullName;
@@ -198,9 +186,6 @@
 				schoolCode = "";
 				teacherName.value = "";
 				authKey.value = "";
-				router.getRoute(function(route) {
-					console.log("goBack From " + route);
-				});
 				router.goBack();
 			},
 			onSearchSchoolPanel, searchSchoolPanelOn, searchSchoolPanelDown,
@@ -306,12 +291,6 @@
 
 	<StackPanel ItemSpacing="10" Alignment="TopCenter" Color="White" Width="100%" Padding="20">
 		<Grid ColumnCount="2" Columns="1*, 2*" CellSpacing="10" Margin="5">
-			<!-- <Text Font="Normal" Value="지역 : " Color="Black" Alignment="CenterRight" />
-
-			<Rectangle Width="100%" Height="50" CornerRadius="5" Color="White">
-				<Stroke Width="1" Color="#888" />
-				<Text Font="Normal"Input Value="{schoolGrade}" PlaceholderText="지역(시군구)" PlaceholderColor="#888" Margin="5" />
-			</Rectangle> -->
 			<Panel ColumnSpan="2" Height="50">
 				<Grid ColumnCount="3" Margin="5">
 					<Selection Value="{schoolGrade}" MaxCount="1" MinCount="1" />

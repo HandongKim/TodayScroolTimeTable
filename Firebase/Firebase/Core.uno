@@ -16,6 +16,11 @@ namespace Firebase
         static public void Init() { }
     }
 
+    //[Require("Cocoapods.Podfile.Target", "pod 'Firebase/Core'")]
+    //[Require("Cocoapods.Podfile.Target", "pod 'FirebaseAnalytics'")]
+    //[Require("Cocoapods.Podfile.Target", "pod 'Firebase/Core', '4.6.0'")]
+    //[Require("Cocoapods.Podfile.Target", "pod 'FirebaseAnalytics', '4.0.5'")]
+    //[Require("Source.Include", "Firebase/Firebase.h")]
     [Require("Cocoapods.Podfile.Target", "pod 'Firebase/Core'")]
     [Require("Cocoapods.Podfile.Target", "pod 'FirebaseAnalytics'")]
     [Require("Source.Include", "Firebase/Firebase.h")]
