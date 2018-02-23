@@ -8,7 +8,7 @@
 				<Text Value="예" FontSize="20" Alignment="Center" />
 				<Clicked>
 					<Toggle Target="popupExit" />
-					<HomeScreen Type="CallIntent" />
+					<HomeScreen Type="Finish" />
 				</Clicked>
 			</Rectangle>
 

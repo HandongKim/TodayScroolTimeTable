@@ -3,6 +3,7 @@
 
 	<JavaScript>
 		var Observable = require('FuseJS/Observable');
+		var Alerts = require('FuseJS/Alerts');
 		var FileSystem = require("FuseJS/FileSystem");
 		var path = FileSystem.dataDirectory + "/" + "StudentSetting.tmp";
 
@@ -149,9 +150,10 @@
 						searchTimetable();
 					}, 1000);
 				} else {
-					studentSearchAlert.title.value = "설정";
-					studentSearchAlert.contents.value = "학교정보를 먼저 설정하셔야 검색하실 수 있습니다.";
-					studentSearchAlert.layer.value = "Overlay";
+					// studentSearchAlert.title.value = "설정";
+					// studentSearchAlert.contents.value = "학교정보를 먼저 설정하셔야 검색하실 수 있습니다.";
+					// studentSearchAlert.layer.value = "Overlay";
+					Alerts.alert("설정", "학교정보를 먼저 설정하셔야 검색하실 수 있습니다.", "확인");
 					currentDateSet();
 				}
 			}, function(error) {
@@ -192,16 +194,18 @@
 			if (searchDayLevel == "sat") {
 				studentSearchingPanel.layer.value = "Background";
 				studentSearchingPanel.isLoading.value = false;
-				studentSearchAlert.title.value = "토요일";
-				studentSearchAlert.contents.value = "찾으시는 날은 토요일입니다.";
-				studentSearchAlert.layer.value = "Overlay";
+				// studentSearchAlert.title.value = "토요일";
+				// studentSearchAlert.contents.value = "찾으시는 날은 토요일입니다.";
+				// studentSearchAlert.layer.value = "Overlay";
+				Alerts.alert("토요일", "찾으시는 날은 토요일입니다.", "확인");
 				return;
 			} else if (searchDayLevel == "sun") {
 				studentSearchingPanel.layer.value = "Background";
 				studentSearchingPanel.isLoading.value = false;
-				studentSearchAlert.title.value = "일요일";
-				studentSearchAlert.contents.value = "찾으시는 날은 일요일입니다.";
-				studentSearchAlert.layer.value = "Overlay";
+				// studentSearchAlert.title.value = "일요일";
+				// studentSearchAlert.contents.value = "찾으시는 날은 일요일입니다.";
+				// studentSearchAlert.layer.value = "Overlay";
+				Alerts.alert("일요일", "찾으시는 날은 일요일입니다.", "확인");
 				return;
 			}
 
@@ -233,16 +237,18 @@
 				if (student.authKey != currentKey) {
 					studentSearchingPanel.layer.value = "Background";
 					studentSearchingPanel.isLoading.value = false;
-					studentSearchAlert.title.value = "인증키";
-					studentSearchAlert.contents.value = "인증키가 잘못되었습니다.";
-					studentSearchAlert.layer.value = "Overlay";
+					// studentSearchAlert.title.value = "인증키";
+					// studentSearchAlert.contents.value = "인증키가 잘못되었습니다.";
+					// studentSearchAlert.layer.value = "Overlay";
+					Alerts.alert("인증키", "인증키가 잘못되었습니다.", "확인");
 					return;
 				} else if ((tempDate-startDate)<0 || (tempDate-endDate)>0) {
 					studentSearchingPanel.layer.value = "Background";
 					studentSearchingPanel.isLoading.value = false;
-					studentSearchAlert.title.value = "학사일정";
-					studentSearchAlert.contents.value = "조회하는 날짜는 학기중이 아닙니다.";
-					studentSearchAlert.layer.value = "Overlay";
+					// studentSearchAlert.title.value = "학사일정";
+					// studentSearchAlert.contents.value = "조회하는 날짜는 학기중이 아닙니다.";
+					// studentSearchAlert.layer.value = "Overlay";
+					Alerts.alert("학사일정", "조회하는 날짜는 학기중이 아닙니다.", "확인");
 					return;
 				}
 				return true;
@@ -320,6 +326,7 @@
 										changedClass.replaceAt(4, {className: "니", color: "#c47"});
 										changedClass.replaceAt(5, {className: "", color: "#197"});
 										changedClass.replaceAt(6, {className: "다", color: "#c47"});
+										Alerts.alert("시간표", "해당 날짜에 변경된 시간표가 없습니다.", "확인");
 									} else {
 										var grade = student.class.value.slice(0,1);
 										var classNum = student.class.value.slice(student.class.value.indexOf('-')+1, student.class.value.length);
@@ -388,7 +395,7 @@
 		<Callback Handler="{readStudentSetting}" />
 	</WhileActive>
 
-	<Rectangle Width="250" Height="200" CornerRadius="5" Color="White" Layer="{studentSearchAlert.layer}">
+	<!-- <Rectangle Width="250" Height="200" CornerRadius="5" Color="White" Layer="{studentSearchAlert.layer}">
 		<DockPanel>
 			<Rectangle Dock="Top" Width="250" Height="50" CornerRadius="5,5,0,0" Color="#197">
 				<Text Font="Normal" Value="{studentSearchAlert.title}" Alignment="CenterLeft" Color="White" Margin="15">
@@ -411,7 +418,7 @@
 			</Panel>
 		</DockPanel>
 		<Stroke Width="1" Color="Black" />
-	</Rectangle>
+	</Rectangle> -->
 
 	<Panel Width="100%" Height="100%" Color="#fff8" Layer="{studentSearchingPanel.layer}">
 		<Circle ux:Name="studentSerchingPanelLoadingCircle" Width="50" Height="50" StartAngleDegrees="0" LengthAngleDegrees="90">

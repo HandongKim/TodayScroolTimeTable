@@ -3,7 +3,8 @@
   "Title": "오늘의시간표",
   "Packages": [
     "Fuse",
-    "FuseJS"
+    "FuseJS",
+    "Fuse.Alerts"
   ],
   "Projects": [
     "Firebase/Firebase/Firebase.unoproj",
@@ -32,11 +33,18 @@
       "XHDPI": "$(Icon)",
       "XXHDPI": "$(Icon)",
       "XXXHDPI": "$(Icon)"
+    },
+    "Key": {
+      "Alias": "application",
+      "AliasPassword": "83esca",
+      "Store": "release.keystore",
+      "StorePassword": "83esca"
     }
   },
   "iOS": {
     "BundleIdentifier": "com.apps.TodaySchoolTimeTable",
     "DeploymentTarget": "8.0",
+    "DevelopmentTeam": "T7D4MC2K7U",
     "Version":"1.0.0",
     "Build":"6",
     "Devices":"iPhone",
