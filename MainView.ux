@@ -36,6 +36,18 @@
 			goStudentSetting: function() {
 				console.log("goStudentSetting Clicked.");
 				router.push("StudentSetting");
+			},
+			goFindMenu: function() {
+				console.log("goFindMenu Clicked.");
+				router.push("FindMenu");
+			},
+			goFindSchedule: function() {
+				console.log("goFindSchedule Clicked.");
+				router.push("FindSchedule");
+			},
+			goSchoolSetting: function() {
+				console.log("goSchoolSetting Clicked.");
+				router.push("SchoolSetting");
 			}
 		};
 	</JavaScript>
@@ -49,14 +61,14 @@
 			<Navigator DefaultPath="Intro">
 				<Intro ux:Template="Intro" router="router" />
 				<MainPage ux:Template="MainPage" router="router" />
-				<!-- <TeacherLogin ux:Template="TeacherLogin" router="router" />
-				<TeacherSignIn ux:Template="TeacherSignIn" router="router" /> -->
 				<TeacherSearch ux:Template="TeacherSearch" router="router" />
 				<TeacherSetting ux:Template="TeacherSetting" router="router" />
 				<StudentSearch ux:Template="StudentSearch" router="router" />
 				<StudentSetting ux:Template="StudentSetting" router="router" />
+				<FindMenu ux:Template="FindMenu" router="router" />
+				<FindSchedule ux:Template="FindSchedule" router="router" />
+				<SchoolSetting ux:Template="SchoolSetting" router="router" />
 			</Navigator>
 		</ClientPanel>
-		<!-- <BottomBarBackground Dock="Bottom" /> -->
 	</DockPanel>
 </App>

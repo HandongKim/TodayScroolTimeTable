@@ -1,0 +1,342 @@
+<Panel ux:Class="SchoolSetting">
+	<Router ux:Dependency="router" />
+
+	<JavaScript>
+		var Observable = require('FuseJS/Observable');
+		var Alerts = require('FuseJS/Alerts');
+		var FileSystem = require("FuseJS/FileSystem");
+		var path = FileSystem.dataDirectory + "/" + "SchoolSetting.tmp";
+
+		var schoolGrade = Observable("초등학교");
+		var location = Observable("서울특별시");
+		var schoolCode = Observable();
+
+		function schoolSetting() {
+			if (schoolCode.value.length != 10) {
+				Alerts.alert("설정", "학교코드의 길이가 잘못되었습니다.", "확인");
+				return;
+			}
+			schoolCode.value = schoolCode.value.toUpperCase();
+			var tempText = '{"schoolGrade":"' + schoolGrade.value + '","location":"' + location.value + '","schoolCode":"' + schoolCode.value + '"}';
+			FileSystem.writeTextToFile(path, tempText).then(function() {
+				return FileSystem.readTextFromFile(path);
+			}).then(function(text) {
+				router.getRoute(function(route) {
+					console.log("goBack From " + route);
+				});
+				router.goBack();
+			}).catch(function(error) {
+				console.log("Unable to read file due to error:" + error);
+			});
+		}
+
+		function readSchoolSetting() {
+			FileSystem.exists(path).then(function(x) {
+				if (x) {
+					FileSystem.readTextFromFile(path).then(function(contents) {
+						var tempArray = JSON.parse(contents);
+
+						location.value = tempArray["location"];
+						schoolGrade.value = tempArray["schoolGrade"];
+						schoolCode.value = tempArray["schoolCode"];
+					}, function(error) {
+						console.log(error);
+					});
+				}
+			}, function(error) {
+				console.log("Unable to check if file exists");
+			});
+		}
+
+		onFindSchoolCodePanel = Observable(false);
+		function findSchoolCodePanelUp() {
+			onFindSchoolCodePanel.value = true;
+		}
+		function findSchoolCodePanelDown() {
+			onFindSchoolCodePanel.value = false;
+		}
+
+		function searchSchoolCode() {
+			searchedSchool.clear();
+
+			if (enteredSchoolName.value.length < 2) {
+				showErrorMessage.value = "학교 이름이 너무 짧습니다.";
+				return;
+			}
+
+			var locationUrl = "sen";
+			findSchoolCode(locationUrl);
+			locationUrl = "pen";
+			findSchoolCode(locationUrl);
+			locationUrl = "dge";
+			findSchoolCode(locationUrl);
+			locationUrl = "ice";
+			findSchoolCode(locationUrl);
+			locationUrl = "gen";
+			findSchoolCode(locationUrl);
+			locationUrl = "dje";
+			findSchoolCode(locationUrl);
+			locationUrl = "use";
+			findSchoolCode(locationUrl);
+			locationUrl = "sje";
+			findSchoolCode(locationUrl);
+			locationUrl = "goe";
+			findSchoolCode(locationUrl);
+			locationUrl = "kwe";
+			findSchoolCode(locationUrl);
+			locationUrl = "cbe";
+			findSchoolCode(locationUrl);
+			locationUrl = "cne";
+			findSchoolCode(locationUrl);
+			locationUrl = "jbe";
+			findSchoolCode(locationUrl);
+			locationUrl = "jne";
+			findSchoolCode(locationUrl);
+			locationUrl = "gbe";
+			findSchoolCode(locationUrl);
+			locationUrl = "gne";
+			findSchoolCode(locationUrl);
+			locationUrl = "jje";
+			findSchoolCode(locationUrl);
+		}
+
+		function findSchoolCode(locationUrl) {
+			var searchUrl = "https://par." + locationUrl + ".go.kr/pas_ocm_oi00_002.do?kraOrgNm=" + enteredSchoolName.value;
+			searchUrl = encodeURI(searchUrl);
+
+			fetch(searchUrl).then(function(x) {
+				return x.json();
+			}).then(function(res) {
+				var temp = res.resultSVO.data.orgDVOList;
+				// console.log(JSON.stringify(temp));
+				for (var i = 0 ; i < temp.length ; i++) {
+					// console.log(JSON.stringify(temp[i].schulCrseScCode));
+					if (temp[i].schulCrseScCode == "2" || temp[i].schulCrseScCode == "3" ||temp[i].schulCrseScCode == "4") {
+						searchedSchool.add({
+							location: temp[i].lctnScCodeNm,
+							code: temp[i].orgCode,
+							grade: temp[i].schulCrseScCodeNm,
+							name: temp[i].kraOrgNm
+						});
+					}
+				}
+				// showErrorMessage.value = "";
+			})
+		}
+
+		function selectSchoolCode(arg) {
+			schoolGrade.value = arg.data.grade;
+			location.value = arg.data.location;
+			schoolCode.value = arg.data.code;
+			findSchoolCodePanelDown();
+		}
+
+		var searchedSchool = Observable();
+		var enteredSchoolName = Observable("");
+		var showErrorMessage = Observable("검색결과가 없습니다.");
+
+		module.exports = {
+			schoolGrade, location, schoolCode,
+			schoolSetting, readSchoolSetting,
+			cancelSchoolSetting: function() {
+				schoolGrade.value = "초등학교";
+				location.value = "서울특별시";
+				schoolCode.value = "";
+				router.goBack();
+			},
+			findSchoolCodePanelUp, findSchoolCodePanelDown, onFindSchoolCodePanel,
+			searchSchoolCode, selectSchoolCode,
+			enteredSchoolName, searchedSchool, showErrorMessage
+		};
+	</JavaScript>
+
+	<WhileActive>
+		<Callback Handler="{readSchoolSetting}" />
+	</WhileActive>
+
+	<Rectangle ux:Class="SchoolGradeRec3" Color="White">
+		<string ux:Property="Value" />
+		<Selectable Value="{Property Value}" />
+
+		<Text Font="Normal" ux:Name="recText" Value="{Property Value}" Color="Black" Alignment="Center" />
+
+		<Tapped>
+			<ToggleSelection />
+		</Tapped>
+
+		<WhileSelected>
+			<Change this.Color="#c47" />
+			<Change recText.Color="#FFF" />
+		</WhileSelected>
+
+		<Stroke Width="1" Color="#c47" />
+	</Rectangle>
+
+	<Rectangle ux:Class="LocationRec" Color="White">
+		<string ux:Property="Value" />
+		<Selectable Value="{Property Value}" />
+
+		<Text Font="Normal" ux:Name="recText" Value="{Property Value}" Color="Black" Alignment="Center" FontSize="14" />
+
+		<Tapped>
+			<ToggleSelection />
+		</Tapped>
+
+		<WhileSelected>
+			<Change this.Color="#c47" />
+			<Change recText.Color="#FFF" />
+		</WhileSelected>
+
+		<Stroke Width="1" Color="#c47" />
+	</Rectangle>
+
+	<Rectangle ux:Name="findSchoolCodePanel" X="100%" Width="95%" Height="99%" Color="Black" Alignment="Center">
+		<Grid ColumnCount="1" Margin="1" CellSpacing="1" Rows="Auto">
+			<Grid Height="100" ColumnCount="1">
+				<Panel Width="100%" Alignment="Center" Color="White">
+					<Panel Width="30" Height="30" Color="White" Alignment="CenterLeft" Margin="10">
+						<Rectangle Width="30" Color="Black" Height="2" Alignment="Center">
+							<Rotation Degrees="45" />
+						</Rectangle>
+
+						<Rectangle Width="30" Color="Black" Height="2" Alignment="Center">
+							<Rotation Degrees="-45" />
+						</Rectangle>
+
+						<Clicked>
+							<Callback Handler="{findSchoolCodePanelDown}" />
+						</Clicked>
+					</Panel>
+
+					<Text Font="Normal" Value="학교검색" Color="Black" Alignment="Center">
+						<Scaling Factor="1.5" />
+					</Text>
+				</Panel>
+
+				<Grid ColumnCount="3" Columns="1*, 3*, 1*" Color="White">
+					<Text Font="Normal" Value="학교명 : " Alignment="CenterRight" Margin="10,0,0,0" />
+
+					<Rectangle Width="90%" Height="30" CornerRadius="3">
+						<TextInput Value="{enteredSchoolName}" PlaceholderText="2글자 이상 입력하세요" PlaceholderColor="#888" Margin="5,0" />
+						<Stroke Width="1" Color="#888" />
+					</Rectangle>
+					<Rectangle Color="#18f" Width="100%" Height="30" CornerRadius="3" Margin="10,0">
+						<Text Font="Normal" Value="검색" Color="White" Alignment="Center" />
+
+						<Clicked>
+							<Callback Handler="{searchSchoolCode}" />
+						</Clicked>
+					</Rectangle>
+				</Grid>
+			</Grid>
+			<Panel Color="#eee">
+				<ScrollView Alignment="Top">
+					<StackPanel Margin="10" ItemSpacing="1">
+						<Each Items="{searchedSchool}" Defer="Deferred">
+							<Rectangle Width="100%" Height="40" Color="White">
+								<ScrollView AllowedScrollDirections="Horizontal" SnapMaxTransform="false" SnapMinTransform="false" Alignment="Center">
+									<StackPanel Orientation="Horizontal" Alignment="CenterLeft" ItemSpacing="5">
+										<Text Font="Normal" Value="{location}" Alignment="Center" />
+										<Text Font="Normal" Value="{name}" Alignment="Center" />
+									</StackPanel>
+
+									<Clicked>
+										<Callback Handler="{selectSchoolCode}" />
+									</Clicked>
+								</ScrollView>
+							</Rectangle>
+						</Each>
+						<WhileEmpty Items="{searchedSchool}">
+							<Rectangle Width="100%" Height="40" Color="White">
+								<Text Font="Normal" Value="{showErrorMessage}" Color="Black" Alignment="Center" />
+							</Rectangle>
+						</WhileEmpty>
+					</StackPanel>
+				</ScrollView>
+			</Panel>
+		</Grid>
+
+		<WhileTrue Value="{onFindSchoolCodePanel}">
+			<Change findSchoolCodePanel.X="0" Duration="0.2" Easing="CubicOut"/>
+		</WhileTrue>
+	</Rectangle>
+
+	<DockPanel Color="White">
+		<Panel Dock="Top" Height="50">
+			<Panel Color="White" Alignment="CenterLeft">
+				<Circle Width="30" Height="30" Margin="10" Alignment="CenterLeft">
+					<Stroke Width="3" Color="#c47" />
+					<Image File="Back.png" Width="60%" X="-2" Color="#c47" Alignment="Center" />
+				</Circle>
+
+				<Clicked>
+					<Callback Handler="{goBack}" />
+				</Clicked>
+			</Panel>
+		</Panel>
+		<StackPanel Width="90%">
+			<Grid Columns="1*, 3*" Width="100%" Dock="Top">
+				<Text Font="Normal" Value="학교코드 :" Alignment="Center" />
+				<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5, 10">
+					<Text Font="Normal" Value="{schoolCode}" Alignment="Center" Margin="10,0" Width="100%" />
+
+					<Clicked>
+						<Callback Handler="{findSchoolCodePanelUp}" />
+					</Clicked>
+					<Stroke Width="1" Color="#c47" />
+				</Rectangle>
+			</Grid>
+
+			<Grid ColumnCount="3" Margin="5, 10" Height="40">
+				<Selection Value="{schoolGrade}" MaxCount="1" MinCount="1" />
+				<SchoolGradeRec3 Value="초등학교" CornerRadius="3,0,0,3" />
+				<SchoolGradeRec3 Value="중학교" />
+				<SchoolGradeRec3 Value="고등학교" CornerRadius="0,3,3,0" />
+			</Grid>
+
+			<Grid ColumnCount="3" Margin="5, 10" Height="240">
+				<Selection Value="{location}" MaxCount="1" MinCount="1" />
+				<LocationRec Value="서울특별시" CornerRadius="3,0,0,0" />
+				<LocationRec Value="부산광역시" />
+				<LocationRec Value="대구광역시" CornerRadius="0,3,0,0" />
+				<LocationRec Value="인천광역시" />
+				<LocationRec Value="광주광역시" />
+				<LocationRec Value="대전광역시" />
+				<LocationRec Value="울산광역시" />
+				<LocationRec Value="세종특별자치시" />
+				<LocationRec Value="경기도" />
+				<LocationRec Value="강원도" />
+				<LocationRec Value="충청북도" />
+				<LocationRec Value="충청남도" />
+				<LocationRec Value="전라북도" />
+				<LocationRec Value="전라남도" />
+				<LocationRec Value="경상북도" />
+				<LocationRec Value="경상남도" CornerRadius="0,0,0,3" />
+				<LocationRec Value="제주특별자치도" />
+				<Rectangle Color="White" Width="100%" Height="100%" CornerRadius="0,0,3,0">
+					<Stroke Width="1" Color="#c47" />
+				</Rectangle>
+			</Grid>
+
+			<Grid ColumnCount="2">
+				<Rectangle Width="90%" Height="50" Color="#444" CornerRadius="5">
+					<Stroke Width="1" Color="#ddd" />
+					<Text Font="Normal" Value="취소" Color="White" Alignment="Center" />
+
+					<Clicked>
+						<Callback Handler="{cancelSchoolSetting}" />
+					</Clicked>
+				</Rectangle>
+
+				<Rectangle Width="90%" Height="50" Color="#c47" CornerRadius="5">
+					<Stroke Width="1" Color="#ddd" />
+					<Text Font="Normal" Value="확인" Color="White" Alignment="Center" />
+
+					<Clicked>
+						<Callback Handler="{schoolSetting}" />
+					</Clicked>
+				</Rectangle>
+			</Grid>
+		</StackPanel>
+	</DockPanel>
+</Panel>

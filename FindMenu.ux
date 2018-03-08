@@ -1,0 +1,395 @@
+<Panel ux:Class="FindMenu">
+	<Router ux:Dependency="router" />
+
+	<JavaScript>
+		var Observable = require('FuseJS/Observable');
+		var Alerts = require('FuseJS/Alerts');
+		var FileSystem = require("FuseJS/FileSystem");
+		var path = FileSystem.dataDirectory + "/" + "SchoolSetting.tmp";
+
+		var year = Observable(2018);
+		var years = Observable();
+		for (var i = 0 ; i < 10 ; i++) {
+			years.add(2018+i);
+		}
+		var stYearPos = Observable(0);
+		
+		var month = Observable(1);
+		var months = Observable();
+		for (var i = 0 ; i < 12 ; i++) {
+			months.add(i+1);
+		}
+		var stMonthPos = Observable(0);
+		
+		var day = Observable(21);
+		var days = Observable();
+		for (var i = 0 ; i < 31 ; i++) {
+			days.add(i+1);
+		}
+		var stDayPos = Observable(0);
+		
+		function currentDateSet() {
+			var currentTime = new Date();
+
+			year.value = currentTime.getFullYear();
+			stYearPos.value = 0;
+			for (var i = 0 ; i < years.length ; i++) {
+				if (years.getAt(i) == year.value) {
+					break;
+				} else {
+					stYearPos.value += 50;
+				}
+			}
+
+			month.value = currentTime.getMonth() + 1;
+			stMonthPos.value = 0;
+			for (var i = 0 ; i < months.length ; i++) {
+				if (months.getAt(i) == month.value) {
+					break;
+				} else {
+					stMonthPos.value += 50;
+				}
+			}
+
+			day.value = currentTime.getDate();
+			stDayPos.value = 0;
+			for (var i = 0 ; i < days.length ; i++) {
+				if (days.getAt(i) == day.value) {
+					break;
+				} else {
+					stDayPos.value += 50;
+				}
+			}
+			return true;
+		}
+
+		function daysSetting(x) {
+			var maxDay = 28;
+			if (x == 2) {
+				if ((year.value % 4 == 0) && (year.value % 100 != 0) || (year.value % 400 == 0)) {
+					maxDay = 29;
+				}
+			} else if (x > 7) {
+				if (x % 2 == 1) {
+					maxDay = 30;
+				} else if (x % 2 == 0) {
+					maxDay = 31;
+				}
+			} else {
+				if (x % 2 == 0) {
+					maxDay = 30;
+				} else if (x % 2 == 1) {
+					maxDay = 31;
+				}
+			}
+
+			if (maxDay < days.length) {
+				var temp = days.length;
+				for (var i = maxDay+1 ; i <= temp ; i++) {
+					days.tryRemove(i);
+				}
+			} else if (maxDay > days.length) {
+				var temp = days.length;
+				for (var i = temp+1 ; i <= maxDay ; i++) {
+					days.add(i);
+				}
+			}
+		}
+		month.onValueChanged(null, function(x) {
+			daysSetting(x);
+		});
+		year.onValueChanged(null, function(x) {
+			daysSetting(month.value);
+		});
+
+		menuPickerOn = Observable(false);
+		function menuPickerUp() {
+			menuPickerOn.value = true;
+		}
+		function menuPickerDown() {
+			menuPickerOn.value = false;
+		}
+
+		var schoolCode = Observable();
+		var schoolGrade = Observable("초등학교");
+		var location = Observable();
+		var locationUrl;
+		var kndCode;
+		var menu = Observable("아직 검색 전입니다.");
+
+		function searchMenu() {
+			if (!confirmSetting) {
+				Alerts.alert("설정", "학교정보를 먼저 설정하셔야 검색하실 수 있습니다.", "확인");
+				return;
+			}
+			var baseUrl = "https://stu." + locationUrl + ".go.kr/sts_sci_md00_001.do?";
+			var tempMonth;
+			if (month.value < 10) {
+				tempMonth = "0" + month.value;
+			} else {
+				tempMonth = month.value;
+			}
+
+			var searchUrl = baseUrl + "ay=" + year.value + "&mm=" + tempMonth + "&schulCode=" + schoolCode.value + "&schulKndScCode=0" + kndCode + "&schulCrseScCode=" + kndCode;
+
+			// console.log(searchUrl);
+
+			//로딩패널 온
+			findingMenuPanel.layer.value = "Overlay";
+			findingMenuPanel.isLoading.value = true;
+				
+			fetch(searchUrl).then(function(x) {
+				return x.text();
+			}).then(function(res) {
+				// console.log(res);
+				findingMenuPanel.layer.value = "Background";
+				findingMenuPanel.isLoading.value = false;
+				parsingMenu(res);
+			});
+		}
+
+		function parsingMenu(data) {
+			// 데이터 존재 확인
+			var confirm = false;
+			if (data.indexOf('조식') == -1 && data.indexOf('중식') == -1 && data.indexOf('석식') == -1) {
+				menu.value = "급식 정보가 없습니다.";
+				return;
+			}
+			
+			// 파싱 시작
+			// 찾는 날짜의 데이터 시작위치를 찾음
+			var findDate = "" + day.value;
+			var startState = data.indexOf('<div>'+findDate);
+			// 찾는 날짜에 급식 정보가 없는지 확인
+			if (data.indexOf('</div>', startState) - startState == 5 + findDate.length) {
+				menu.value = "급식 정보가 없습니다.\n학교 설정 이나 날짜를 확인해주세요.";
+				return;
+			}
+			var endDateState = data.indexOf('<br />', startState);
+			var endState = data.indexOf('</div>', startState);
+			var tempDate = data.slice(startState+5, endDateState);
+			var tempMenu = data.slice(endDateState+6, endState).replace(/<(\/)?([a-zA-Z]*)(\s[a-zA-Z]*=[^>]*)?(\s)*(\/)?>/g,"\n");
+			menu.value = "";
+			menu.value = tempMenu;
+		}
+
+		var confirmSetting = false;
+		function readSchoolSetting() {
+			FileSystem.exists(path).then(function(x) {
+				if (x) {
+					FileSystem.readTextFromFile(path).then(function(contents) {
+						confirmSetting = true;
+						// console.log(contents);
+						var tempArray = JSON.parse(contents);
+
+						location.value = tempArray["location"];
+						schoolGrade.value = tempArray["schoolGrade"];
+						schoolCode.value = tempArray["schoolCode"];
+						
+						if (location.value == "서울특별시") {
+							locationUrl = "sen";
+						} else if (location.value == "부산광역시") {
+							locationUrl = "pen";
+						} else if (location.value == "대구광역시") {
+							locationUrl = "dge";
+						} else if (location.value == "인천광역시") {
+							locationUrl = "ice";
+						} else if (location.value == "광주광역시") {
+							locationUrl = "gen";
+						} else if (location.value == "대전광역시") {
+							locationUrl = "dje";
+						} else if (location.value == "울산광역시") {
+							locationUrl = "use";
+						} else if (location.value == "세종특별자치시") {
+							locationUrl = "sje";
+						} else if (location.value == "경기도") {
+							locationUrl = "goe";
+						} else if (location.value == "강원도") {
+							locationUrl = "kwe";
+						} else if (location.value == "충청북도") {
+							locationUrl = "cbe";
+						} else if (location.value == "충청남도") {
+							locationUrl = "cne";
+						} else if (location.value == "전라북도") {
+							locationUrl = "jbe";
+						} else if (location.value == "전라남도") {
+							locationUrl = "jne";
+						} else if (location.value == "경상북도") {
+							locationUrl = "gbe";
+						} else if (location.value == "경상남도") {
+							locationUrl = "gne";
+						} else if (location.value == "제주특별자치도") {
+							locationUrl = "jje";
+						}
+
+						if (schoolGrade.value == "초등학교") {
+							kndCode = "2";
+						} else if (schoolGrade.value == "중학교") {
+							kndCode = "3";
+						} else if (schoolGrade.value == "고등학교") {
+							kndCode = "4";
+						}
+					}, function(error) {
+						console.log(error);
+					});
+
+					currentDateSet();
+					window.setTimeout(function() {
+						searchMenu();
+					}, 1000);
+				} else {
+					currentDateSet();
+				}
+			}, function(error) {
+				console.log("Unable to check if file exists");
+			});
+		}
+
+		var findingMenuPanel = {
+			layer: Observable("Background"),
+			isLoading: Observable(false)
+		};
+
+		module.exports = {
+			stYearPos, years, year, stMonthPos, months, month, stDayPos, days, day,
+			menuPickerOn, menuPickerUp, menuPickerDown,
+			searchMenu, menu, currentDateSet, schoolCode, schoolGrade, location,
+			readSchoolSetting, findingMenuPanel
+		};
+	</JavaScript>
+
+	<WhileActive>
+		<Callback Handler="{readSchoolSetting}" />
+		<Callback Handler="{currentDateSet}" />
+	</WhileActive>
+
+	<Panel Width="100%" Height="100%" Color="#fff8" Layer="{findingMenuPanel.layer}">
+		<Circle ux:Name="findingMenuLoadingCircle" Width="50" Height="50" StartAngleDegrees="0" LengthAngleDegrees="90">
+			<Stroke Width="5" Color="#18f" />
+		</Circle>
+
+		<WhileTrue Value="{findingMenuPanel.isLoading}">
+			<Spin Target="findingMenuLoadingCircle" Frequency="2" />
+			<Cycle Target="findingMenuLoadingCircle.LengthAngleDegrees" Low="30" High="300" Frequency="0.7" />
+		</WhileTrue>
+	</Panel>
+
+	<StackPanel ux:Name="findMenuPickerPanel" Color="White" Width="100%" Alignment="BottomCenter" Y="250">
+		<Panel Height="50">
+			<Rectangle Color="White" Alignment="CenterRight">
+				<Button Text="확인" Margin="10" />
+				<Clicked>
+					<Callback Handler="{menuPickerDown}" />
+				</Clicked>
+			</Rectangle>
+			<Rectangle Width="100%" Height="1" Color="#18f" Alignment="Top" />
+			<Rectangle Width="100%" Height="1" Color="#18f" Alignment="Bottom" />
+		</Panel>
+
+		<Grid ColumnCount="8" Columns="1*, 3*, 1*, 2*, 1*, 2*, 1*, 1*" Width="100%" Height="150">
+			<Panel />
+
+			<MyPicker Selected="{year}" Data="{years}" StPos="{stYearPos}"  />
+
+			<Text Font="Normal" Value="년" Alignment="Center" />
+
+			<MyPicker Selected="{month}" Data="{months}" StPos="{stMonthPos}" />
+
+			<Text Font="Normal" Value="월" Alignment="Center" />
+
+			<MyPicker Selected="{day}" Data="{days}" StPos="{stDayPos}" />
+
+			<Text Font="Normal" Value="일" Alignment="Center" />
+
+			<Panel />
+		</Grid>
+
+		<Panel Height="50" />
+
+		<WhileTrue Value="{menuPickerOn}">
+			<Change findMenuPickerPanel.Y="0" Duration="0.1" />
+		</WhileTrue>
+	</StackPanel>
+
+	<DockPanel Color="White">
+		<Panel Dock="Top" Height="50">
+			<Grid ColumnCount="2">
+				<Panel Color="White">
+					<Circle Width="30" Height="30" Margin="10" Alignment="CenterLeft">
+						<Stroke Width="3" Color="#18f" />
+						<Image File="Back.png" Width="60%" X="-2" Color="#18f" Alignment="Center" />
+					</Circle>
+
+					<Clicked>
+						<Callback Handler="{goBack}" />
+						<Callback Handler="{menuPickerDown}" />
+					</Clicked>
+				</Panel>
+				
+				<Image File="Setting.png" Width="30" Color="#18f" Alignment="CenterRight" Margin="10">
+					<Clicked>
+						<Callback Handler="{goSchoolSetting}" />
+					</Clicked>
+				</Image>
+			</Grid>
+		</Panel>
+
+		<Grid Columns="1*, 3*" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="학교코드 :" Alignment="Center" />
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<Text Font="Normal" Value="{schoolCode}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#18f" />
+			</Rectangle>
+		</Grid>
+
+		<Grid ColumnCount="4" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="지역 :" Alignment="Center" />
+
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<TextInput Font="Normal" Value="{location}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#18f" />
+			</Rectangle>
+
+			<Text Font="Normal" Value="학교급 :" Alignment="Center" />
+
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<TextInput Font="Normal" Value="{schoolGrade}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#18f" />
+			</Rectangle>
+		</Grid>
+
+		<Grid Columns="1*, 3*" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="날짜 :" Alignment="Center" />
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<Text Font="Normal" Value="{year} 년 {month} 월 {day} 일" Alignment="Center" Margin="10,0" />
+
+				<Clicked>
+					<Callback Handler="{menuPickerUp}" />
+				</Clicked>
+				<Stroke Width="1" Color="#18f" />
+			</Rectangle>
+		</Grid>
+
+		<Rectangle Width="95%" Height="30" CornerRadius="3" Color="#18f" Margin="10" Dock="Top">
+			<Text Font="Normal" Color="White" Value="급식메뉴 조회" Alignment="Center" />
+			<Clicked>
+				<Callback Handler="{searchMenu}" />
+			</Clicked>
+		</Rectangle>
+
+		<ScrollView Width="95%" Dock="Fill">
+			<StackPanel>
+				<Text Font="Normal" Value="{menu}" Alignment="Center" />
+			</StackPanel>
+		</ScrollView>
+
+		<Text Font="Normal" Color="Black" FontSize="14" Alignment="CenterLeft" Dock="Bottom" Margin="20, 10">
+나이스 대국민 서비스의 내용을 바탕으로 작성됩니다.
+실제와 다를 수 있습니다.</Text>
+
+		<Text Font="Normal" FontSize="12" TextWrapping="Wrap" Dock="Bottom" Width="95%" Margin="0,10, 0, 0">
+* 알레르기 정보
+1.난류 2.우유 3.메밀 4.땅콩 5.대두 6.밀 7.고등어 8.게 9.새우 10.돼지고기 11.복숭아 12.토마토 13.아황산류 14.호두 15.닭고기16.쇠고기 17.오징어 18.조개류(굴,전복,홍합 포함)
+		</Text>
+	</DockPanel>
+</Panel>

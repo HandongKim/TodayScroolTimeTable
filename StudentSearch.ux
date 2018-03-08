@@ -392,7 +392,7 @@
 	</JavaScript>
 
 	<WhileActive>
-		<Callback Handler="{readStudentSetting}" />
+		<Callback Handler="{readStudentSetting}" Delay="0.1" />
 	</WhileActive>
 
 	<!-- <Rectangle Width="250" Height="200" CornerRadius="5" Color="White" Layer="{studentSearchAlert.layer}">

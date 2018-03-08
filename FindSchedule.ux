@@ -1,0 +1,373 @@
+<Panel ux:Class="FindSchedule">
+	<Router ux:Dependency="router" />
+
+	<JavaScript>
+		var Observable = require('FuseJS/Observable');
+		var Alerts = require('FuseJS/Alerts');
+		var FileSystem = require("FuseJS/FileSystem");
+		var path = FileSystem.dataDirectory + "/" + "SchoolSetting.tmp";
+
+		var year = Observable(2017);
+		var sem = Observable("2학기");
+
+
+		var schoolCode = Observable();
+		var schoolGrade = Observable("초등학교");
+		var location = Observable();
+		var locationUrl;
+		var kndCode;
+
+		var confirmSetting = false;
+
+		function readSchoolSetting() {
+			FileSystem.exists(path).then(function(x) {
+				if (x) {
+					FileSystem.readTextFromFile(path).then(function(contents) {
+						confirmSetting = true;
+						// console.log(contents);
+						var tempArray = JSON.parse(contents);
+
+						location.value = tempArray["location"];
+						schoolGrade.value = tempArray["schoolGrade"];
+						schoolCode.value = tempArray["schoolCode"];
+						
+						if (location.value == "서울특별시") {
+							locationUrl = "sen";
+						} else if (location.value == "부산광역시") {
+							locationUrl = "pen";
+						} else if (location.value == "대구광역시") {
+							locationUrl = "dge";
+						} else if (location.value == "인천광역시") {
+							locationUrl = "ice";
+						} else if (location.value == "광주광역시") {
+							locationUrl = "gen";
+						} else if (location.value == "대전광역시") {
+							locationUrl = "dje";
+						} else if (location.value == "울산광역시") {
+							locationUrl = "use";
+						} else if (location.value == "세종특별자치시") {
+							locationUrl = "sje";
+						} else if (location.value == "경기도") {
+							locationUrl = "goe";
+						} else if (location.value == "강원도") {
+							locationUrl = "kwe";
+						} else if (location.value == "충청북도") {
+							locationUrl = "cbe";
+						} else if (location.value == "충청남도") {
+							locationUrl = "cne";
+						} else if (location.value == "전라북도") {
+							locationUrl = "jbe";
+						} else if (location.value == "전라남도") {
+							locationUrl = "jne";
+						} else if (location.value == "경상북도") {
+							locationUrl = "gbe";
+						} else if (location.value == "경상남도") {
+							locationUrl = "gne";
+						} else if (location.value == "제주특별자치도") {
+							locationUrl = "jje";
+						}
+
+						if (schoolGrade.value == "초등학교") {
+							kndCode = "2";
+						} else if (schoolGrade.value == "중학교") {
+							kndCode = "3";
+						} else if (schoolGrade.value == "고등학교") {
+							kndCode = "4";
+						}
+					}, function(error) {
+						console.log(error);
+					});
+					window.setTimeout(function() {
+						searchSchedule();
+					}, 1000);
+				}
+			}, function(error) {
+				console.log("Unable to check if file exists");
+			});
+		}
+
+		// https://stu.goe.go.kr/sts_sci_sf00_001.do?ay=2017&sem=1&schulCode=J100002207&schulKndScCode=03&schulCrseScCode=3
+		function searchSchedule() {
+			if (!confirmSetting) {
+				Alerts.alert("설정", "학교정보를 먼저 설정하셔야 검색하실 수 있습니다.", "확인");
+				return;
+			}
+			var baseUrl = "https://stu." + locationUrl + ".go.kr/sts_sci_sf00_001.do?";
+			
+			var searchUrl = baseUrl + "ay=" + year.value + "&sem=" + sem.value.slice(0,1) + "&schulCode=" + schoolCode.value + "&schulKndScCode=0" + kndCode + "&schulCrseScCode=" + kndCode;
+			
+			//로딩패널 온
+			findingSchedulePanel.layer.value = "Overlay";
+			findingSchedulePanel.isLoading.value = true;
+
+			fetch(searchUrl).then(function(x) {
+				return x.text();
+			}).then(function(res) {
+				// console.log(res);
+				findingSchedulePanel.layer.value = "Background";
+				findingSchedulePanel.isLoading.value = false;
+				parsingSchedule(res);
+			});
+		}
+
+		var columnMonth = Observable();
+		var months = [[], [], [], [], [], []];
+		var scheduleData = Observable();
+		var dates = Observable();
+
+		function parsingSchedule(data) {
+			// 파싱 시작
+			columnMonth.clear();
+			months[0] = [];
+			months[1] = [];
+			months[2] = [];
+			months[3] = [];
+			months[4] = [];
+			months[5] = [];
+			dates.clear();
+			if (data.indexOf('<th scope="row">') == -1) {
+				Alerts.alert("설정", "검색결과가 없습니다. 설정정보를 확인하세요.", "확인");
+				return;
+			}
+			if (sem.value == "1학기") {
+				columnMonth.add({month: "03월", isSelected: Observable(true)});
+				columnMonth.add({month: "04월", isSelected: Observable(false)});
+				columnMonth.add({month: "05월", isSelected: Observable(false)});
+				columnMonth.add({month: "06월", isSelected: Observable(false)});
+				columnMonth.add({month: "07월", isSelected: Observable(false)});
+				columnMonth.add({month: "08월", isSelected: Observable(false)});
+			} else if (sem.value == "2학기") {
+				columnMonth.add({month: "09월", isSelected: Observable(true)});
+				columnMonth.add({month: "10월", isSelected: Observable(false)});
+				columnMonth.add({month: "11월", isSelected: Observable(false)});
+				columnMonth.add({month: "12월", isSelected: Observable(false)});
+				columnMonth.add({month: "01월", isSelected: Observable(false)});
+				columnMonth.add({month: "02월", isSelected: Observable(false)});
+			}
+			
+			// 시작위치 지정
+			var startState = data.indexOf('<th scope="row">')+28;
+			// 해당일 임시 지정
+			var tempDate = data.slice(startState, startState+2);
+
+			var dataStartIndex = data.indexOf('textL', startState);
+			var dataEndIndex = data.indexOf('</td>', dataStartIndex);
+			for (var i = 0 ; i < 31 ; i++) {
+				for (var j = 0 ; j < 6 ; j++) {
+					// 차이가 39또는 44면 데이터 없음.
+					if (dataEndIndex-dataStartIndex == 39 || dataEndIndex-dataStartIndex == 44) {
+						months[j].push("");
+					} else {
+						var tempData = data.slice(dataStartIndex, dataEndIndex).replace(/<(\/)?([a-zA-Z]*)(\s[a-zA-Z]*=[^>]*)?(\s)*(\/)?>/g,"\n").replace(/\n/g, "").replace(/\r/g, "").replace(/\t/g, "").replace(/ /g, "");
+						tempData = tempData.replace(/<spanstyle='color:red'>/g, "  ").replace(/textLlast/g, "").replace(/textL/g, "").replace(/\">/g, "");
+						// tempData = tempData.slice(1, tempData.length);
+						months[j].push(tempData);
+					}
+					dataStartIndex = data.indexOf('textL', dataEndIndex);
+					dataEndIndex = data.indexOf('</td>', dataStartIndex);
+				}
+			}
+			// console.log(JSON.stringify(months));
+			for (var i = 1 ; i < 32 ; i++) {
+				dates.add(i+"일");
+			}
+			scheduleData.replaceAll(months[0]);
+		}
+
+		function colMonthClick(arg) {
+			if (arg.data.month == "03월" || arg.data.month == "09월")  {
+				scheduleData.replaceAll(months[0]);
+			} else if (arg.data.month == "04월" || arg.data.month == "10월")  {
+				scheduleData.replaceAll(months[1]);
+			} else if (arg.data.month == "05월" || arg.data.month == "11월")  {
+				scheduleData.replaceAll(months[2]);
+			} else if (arg.data.month == "06월" || arg.data.month == "12월")  {
+				scheduleData.replaceAll(months[3]);
+			} else if (arg.data.month == "07월" || arg.data.month == "01월")  {
+				scheduleData.replaceAll(months[4]);
+			} else if (arg.data.month == "08월" || arg.data.month == "02월")  {
+				scheduleData.replaceAll(months[5]);
+			}
+			columnMonth.forEach(function(x) {
+				if (x.month == arg.data.month) {
+					x.isSelected.value = true;
+				} else {
+					x.isSelected.value = false;
+				}
+			});
+		}
+
+		var currentTime = new Date();
+
+		var month = currentTime.getMonth() + 1;
+		if (month < 9 && month > 2) {
+			sem.value = "1학기";
+			year.value = currentTime.getFullYear();
+		} else if (month < 3) {
+			sem.value = "2학기";
+			year.value = currentTime.getFullYear() - 1;
+		} else {
+			sem.value = "2학기";
+			year.value = currentTime.getFullYear();
+		}
+
+		var findingSchedulePanel = {
+			layer: Observable("Background"),
+			isLoading: Observable(false)
+		};
+
+		module.exports = {
+			schoolCode, schoolGrade, location, readSchoolSetting,
+			year, sem,
+			searchSchedule, columnMonth, scheduleData, dates, colMonthClick,
+			findingSchedulePanel
+		};
+	</JavaScript>
+
+	<WhileActive>
+		<Callback Handler="{readSchoolSetting}" />
+	</WhileActive>
+
+	<Panel Width="100%" Height="100%" Color="#fff8" Layer="{findingSchedulePanel.layer}">
+		<Circle ux:Name="findingScheduleLoadingCircle" Width="50" Height="50" StartAngleDegrees="0" LengthAngleDegrees="90">
+			<Stroke Width="5" Color="#18f" />
+		</Circle>
+
+		<WhileTrue Value="{findingSchedulePanel.isLoading}">
+			<Spin Target="findingScheduleLoadingCircle" Frequency="2" />
+			<Cycle Target="findingScheduleLoadingCircle.LengthAngleDegrees" Low="30" High="300" Frequency="0.7" />
+		</WhileTrue>
+	</Panel>
+
+	<Rectangle ux:Class="ColMonthRec">
+		<Text ux:Name="colMonthRecText" Value="{month}" Alignment="Center" Margin="5" />
+		<Stroke Width="1" Color="#197" />
+
+		<Clicked>
+			<Callback Handler="{colMonthClick}" />
+		</Clicked>
+
+		<WhileTrue Value="{isSelected}">
+			<Change colMonthRecText.Color="White" />
+			<Change this.Color="#197" />
+		</WhileTrue>
+	</Rectangle>
+
+	<Rectangle ux:Class="SemRec" Color="White" Margin="0, 5">
+		<string ux:Property="Value" />
+		<Selectable Value="{Property Value}" />
+
+		<Text Font="Normal" ux:Name="recText" Value="{Property Value}" Color="Black" Alignment="Center" FontSize="14" />
+
+		<Tapped>
+			<ToggleSelection />
+		</Tapped>
+
+		<WhileSelected>
+			<Change this.Color="#197" />
+			<Change recText.Color="#FFF" />
+		</WhileSelected>
+
+		<Stroke Width="1" Color="#197" />
+	</Rectangle>
+
+	<DockPanel Color="White">
+		<Panel Dock="Top" Height="50">
+			<Grid ColumnCount="2">
+				<Panel Color="White">
+					<Circle Width="30" Height="30" Margin="10" Alignment="CenterLeft">
+						<Stroke Width="3" Color="#197" />
+						<Image File="Back.png" Width="60%" X="-2" Color="#197" Alignment="Center" />
+					</Circle>
+
+					<Clicked>
+						<Callback Handler="{goBack}" />
+					</Clicked>
+				</Panel>
+				
+				<Image File="Setting.png" Width="30" Color="#197" Alignment="CenterRight" Margin="10">
+					<Clicked>
+						<Callback Handler="{goSchoolSetting}" />
+					</Clicked>
+				</Image>
+			</Grid>
+		</Panel>
+
+		<Grid Columns="1*, 3*" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="학교코드 :" Alignment="Center" />
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<Text Font="Normal" Value="{schoolCode}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#197" />
+			</Rectangle>
+		</Grid>
+
+		<Grid ColumnCount="4" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="지역 :" Alignment="Center" />
+
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<TextInput Font="Normal" Value="{location}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#197" />
+			</Rectangle>
+
+			<Text Font="Normal" Value="학교급 :" Alignment="Center" />
+
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<TextInput Font="Normal" Value="{schoolGrade}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#197" />
+			</Rectangle>
+		</Grid>
+
+		<Grid ColumnCount="4" Width="95%" Dock="Top">
+			<Text Font="Normal" Value="학년도 :" Alignment="Center" />
+
+			<Rectangle Height="30" CornerRadius="3" Color="White" Margin="5">
+				<TextInput Font="Normal" Value="{year}" Alignment="Center" Margin="10,0" Width="100%" />
+				<Stroke Width="1" Color="#197" />
+			</Rectangle>
+
+			<Selection Value="{sem}" MaxCount="1" MinCount="1" />
+			<SemRec Value="1학기" CornerRadius="3,0,0,3" />
+			<SemRec Value="2학기" CornerRadius="0,3,3,0" />
+		</Grid>
+
+		<Rectangle Width="95%" Height="30" CornerRadius="3" Color="#197" Margin="10" Dock="Top">
+			<Text Font="Normal" Color="White" Value="학사일정 검색" Alignment="Center" />
+			<Clicked>
+				<Callback Handler="{searchSchedule}" />
+			</Clicked>
+		</Rectangle>
+
+		<Grid ColumnCount="6" Width="95%" Height="30" Dock="Top" Margin="0,0,0,5">
+			<Each Items="{columnMonth}">
+				<ColMonthRec>
+					<Clicked>
+						<Set Target="scheduleScroll.ScrollPosition" Value="0" />
+					</Clicked>
+				</ColMonthRec>
+			</Each>
+		</Grid>
+
+		<ScrollView ux:Name="scheduleScroll" SnapMinTransform="false" SnapMaxTransform="false">
+			<Grid Columns="1*, 3*" Width="95%">
+				<StackPanel>
+					<Each Items="{dates}">
+						<Rectangle Height="30" Margin="0,2">
+							<Text Font="Normal" Value="{}" Alignment="Center" />
+						</Rectangle>
+					</Each>
+				</StackPanel>
+				<StackPanel>
+					<Each Items="{scheduleData}">
+						<Rectangle Height="30" Color="#8dd" Margin="0,2">
+							<Text Font="Normal" Value="{}" Alignment="Center" />
+						</Rectangle>
+					</Each>
+				</StackPanel>
+			</Grid>
+		</ScrollView>
+
+		<Text Font="Normal" Color="Black" FontSize="14" Alignment="CenterLeft" Dock="Bottom" Margin="20, 5">
+나이스 대국민 서비스의 내용을 바탕으로 작성됩니다.
+실제와 다를 수 있습니다.</Text>
+	</DockPanel>
+</Panel>

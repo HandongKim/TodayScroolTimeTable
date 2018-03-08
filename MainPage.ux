@@ -5,12 +5,43 @@
 		<Change pageloaded.Value="true" />
 	</WhileActive>
 
+	<Panel ux:Name="userGuidePanel" X="100%" Color="#0009">
+		<StackPanel Margin="30" Alignment="Center">
+			<Text Font="Normal" TextWrapping="Wrap" Color="White">
+1. 교사 및 학생용 시간표는 해당학교 선생님이 업로드 해야만 조회가 가능합니다.
+
+2. 학사일정 및 급식 조회는 NEIS 대국민 서비스의 내용을 바탕으로 작성됩니다.
+
+3. 시간표 조회와 학사일정 및 급식 조회의 학교 설정은 따로 해주셔야합니다.
+
+4. 학사일정 및 급식 조회의 학교코드는 NEIS학교 코드로 웹페이지에서 확인 후 직접 입력하셔야합니다.
+			</Text>
+		</StackPanel>
+
+		<Clicked>
+			<Toggle Target="userGuidePanelShow" />
+		</Clicked>
+
+		<WhileTrue ux:Name="userGuidePanelShow">
+			<Change userGuidePanel.X="0" Easing="BackIn" Duration="0.2" />
+		</WhileTrue>
+	</Panel>
+
+	<Circle Margin="20" Alignment="TopRight" Width="30" Height="30" Color="White">
+		<Text Value="?" Font="Bold" FontSize="23" Alignment="Center" />
+		<Stroke Width="3" Color="#c47" />
+
+		<Clicked>
+			<Toggle Target="userGuidePanelShow" />
+		</Clicked>
+	</Circle>
+
 	<DockPanel Color="White">
-		<Grid Dock="Fill" ColumnCount="2" Alignment="Center" Margin="50" CellSpacing="10" Y="-50">
+		<Grid Dock="Fill" ColumnCount="2" Rows="Auto" Alignment="Center" Margin="50" CellSpacing="10">
 			<Rectangle CornerRadius="10" Color="#18f">
 				<StackPanel Width="120">
 					<Image File="Teacher.png" Width="100" StretchMode="Uniform" Margin="10" />
-					<Text Value="교사" FontSize="30" Color="White" Alignment="Center" Margin="10" />
+					<Text Font="Normal" Value="교사" FontSize="30" Color="White" Alignment="Center" Margin="10" />
 				</StackPanel>
 				<Clicked>
 					<Callback Handler="{goTeacherSearch}" />
@@ -20,10 +51,30 @@
 			<Rectangle CornerRadius="10" Color="#197">
 				<StackPanel Width="120">
 					<Image File="Student.png" Width="100" StretchMode="Uniform" Margin="10" />
-					<Text Value="학생" FontSize="30" Color="White" Alignment="Center" Margin="10" />
+					<Text Font="Normal" Value="학생" FontSize="30" Color="White" Alignment="Center" Margin="10" />
 				</StackPanel>
 				<Clicked>
 					<Callback Handler="{goStudentSearch}" />
+				</Clicked>
+			</Rectangle>
+
+			<Rectangle CornerRadius="10" Color="#197">
+				<StackPanel Width="120">
+					<Image File="schedule.png" Width="100" StretchMode="Uniform" Margin="10" />
+					<Text Font="Normal" Value="학사일정" FontSize="25" Color="White" Alignment="Center" Margin="10" />
+				</StackPanel>
+				<Clicked>
+					<Callback Handler="{goFindSchedule}" />
+				</Clicked>
+			</Rectangle>
+
+			<Rectangle CornerRadius="10" Color="#18f">
+				<StackPanel Width="120">
+					<Image File="spoon.png" Width="100" StretchMode="Uniform" Margin="10" />
+					<Text Font="Normal" Value="급식" FontSize="30" Color="White" Alignment="Center" Margin="10" />
+				</StackPanel>
+				<Clicked>
+					<Callback Handler="{goFindMenu}" />
 				</Clicked>
 			</Rectangle>
 		</Grid>

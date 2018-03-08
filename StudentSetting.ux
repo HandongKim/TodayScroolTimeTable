@@ -219,9 +219,8 @@
 		<Stroke Width="1" Color="#197" />
 	</Rectangle>
 
-	<Rectangle ux:Name="searchSchoolPanel" X="100%" Width="90%" Height="95%" Color="White" Alignment="Center">
-		<Stroke Width="1" Color="Black" />
-		<StackPanel Width="100%">
+	<Rectangle ux:Name="searchSchoolPanel" X="100%" Width="95%" Height="99%" Color="Black" Alignment="Center">
+		<Grid ColumnCount="1" Margin="1" CellSpacing="1" Rows="Auto" Color="White">
 			<Grid Height="100" ColumnCount="1">
 				<Panel Width="100%" Alignment="Center">
 					<Panel Width="30" Height="30" Color="White" Alignment="CenterLeft" Margin="10">
@@ -243,15 +242,15 @@
 					</Text>
 				</Panel>
 
-				<Grid ColumnCount="3" Columns="1*, 3*, 1*" Margin="10, 0">
-					<Text Font="Normal" Value="학교명 : " Alignment="CenterRight" />
+				<Grid ColumnCount="3" Columns="1*, 3*, 1*" Color="White">
+					<Text Font="Normal" Value="학교명 : " Alignment="CenterRight" Margin="10,0,0,0" />
 
 					<Rectangle Width="90%" Height="30" CornerRadius="3">
 						<TextInput Value="{enteredSchoolName}" PlaceholderText="2글자 이상 입력하세요" PlaceholderColor="#888" Margin="5,0" />
 						<Stroke Width="1" Color="#888" />
 					</Rectangle>
 					<Rectangle Color="#197" Width="100%" Height="30" CornerRadius="3">
-						<Text Font="Normal" Value="검색" Color="White" Alignment="Center" />
+						<Text Font="Normal" Value="검색" Color="White" Alignment="Center" Margin="10,0" />
 
 						<Clicked>
 							<Callback Handler="{schoolSearch}" />
@@ -259,8 +258,7 @@
 					</Rectangle>
 				</Grid>
 			</Grid>
-			<Panel Height="1" Color="Black" />
-			<Panel Color="#eee" Margin="1, 0">
+			<Panel Color="#eee">
 				<ScrollView>
 					<StackPanel Margin="10" ItemSpacing="1">
 						<Each Items="{searchedSchool}" Defer="Deferred">
@@ -285,7 +283,7 @@
 					</StackPanel>
 				</ScrollView>
 			</Panel>
-		</StackPanel>
+		</Grid>
 
 		<WhileTrue Value="{onSearchSchoolPanel}">
 			<Change searchSchoolPanel.X="0" Duration="0.1" />
@@ -352,4 +350,6 @@
 			</Rectangle>
 		</Grid>
 	</StackPanel>
+
+	<Panel Color="White" />
 </Page>

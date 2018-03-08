@@ -18,9 +18,9 @@
       "598F716FEB757D1706C0C67C69CEB122"
     ]
   },
-  "Versions": "1.0.0",
-  "VersionCode": "100",
-  "VersionName": "1.0.0",
+  "Versions": "1.1.0",
+  "VersionCode": "110",
+  "VersionName": "1.1.0",
   "Icon": "Assets/Icon.png",
   "Android": {
     "VersionCode": "$(VersionCode)",
@@ -45,7 +45,7 @@
     "BundleIdentifier": "com.apps.TodaySchoolTimeTable",
     "DeploymentTarget": "8.0",
     "DevelopmentTeam": "T7D4MC2K7U",
-    "Version":"1.0.0",
+    "Version":"1.1.0",
     "Build":"6",
     "Devices":"iPhone",
     "Icons": {
